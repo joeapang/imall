@@ -7,6 +7,7 @@ public interface CartMapper {
 
     int insert(Cart record);
 
+
     int insertSelective(Cart record);
 
     Cart selectByPrimaryKey(Integer id);

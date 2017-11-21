@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.imall.dao.UserMapper">
-  <resultMap id="BaseResultMap" type="com.imall.pojo.User">
+  <resultMap id="UserResultMap" type="com.imall.pojo.User">
     <constructor>
       <idArg column="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="username" javaType="java.lang.String" jdbcType="VARCHAR" />
@@ -15,12 +15,12 @@
       <arg column="update_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
     </constructor>
   </resultMap>
-  <sql id="Base_Column_List">
+  <sql id="User_Column_List">
     id, username, password, email, phone, question, answer, role, create_time, update_time
   </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="UserResultMap">
     select 
-    <include refid="Base_Column_List" />
+    <include refid="User_Column_List" />
     from mmall_user
     where id = #{id,jdbcType=INTEGER}
   </select>
@@ -151,5 +151,17 @@
       update_time = #{updateTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}
   </update>
-  
+
+  <select id="checkUserName" resultType="int" parameterType="com.imall.pojo.User">
+    SELECT count(1) from mmall_user user
+    WHERE user.username=#{username}
+  </select>
+    
+  <select id="checkLogin" resultMap="UserResultMap" parameterType="com.imall.pojo.User">
+      SELECT
+       <include refid="User_Column_List"/>
+       from mmall_user user
+      WHERE user.username=#{username}
+      and password=#{password}
+  </select>
 </mapper>
