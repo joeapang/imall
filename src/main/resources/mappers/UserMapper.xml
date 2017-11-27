@@ -18,6 +18,9 @@
   <sql id="User_Column_List">
     id, username, password, email, phone, question, answer, role, create_time, update_time
   </sql>
+    <sql id="User_Info_List">
+        id, username, email, phone, role, create_time, update_time
+    </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="UserResultMap">
     select 
     <include refid="User_Column_List" />
@@ -35,8 +38,8 @@
       update_time)
     values (#{id,jdbcType=INTEGER}, #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
       #{email,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{question,jdbcType=VARCHAR}, 
-      #{answer,jdbcType=VARCHAR}, #{role,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{updateTime,jdbcType=TIMESTAMP})
+      #{answer,jdbcType=VARCHAR}, #{role,jdbcType=INTEGER}, now(),
+      now())
   </insert>
   <insert id="insertSelective" parameterType="com.imall.pojo.User">
     insert into mmall_user
@@ -98,10 +101,10 @@
         #{role,jdbcType=INTEGER},
       </if>
       <if test="createTime != null">
-        #{createTime,jdbcType=TIMESTAMP},
+        now(),
       </if>
       <if test="updateTime != null">
-        #{updateTime,jdbcType=TIMESTAMP},
+        now(),
       </if>
     </trim>
   </insert>
@@ -156,6 +159,10 @@
     SELECT count(1) from mmall_user user
     WHERE user.username=#{username}
   </select>
+  <select id="checkEmail" resultType="int" parameterType="com.imall.pojo.User">
+    SELECT count(1) from mmall_user user
+    WHERE user.email=#{email}
+  </select>
     
   <select id="checkLogin" resultMap="UserResultMap" parameterType="com.imall.pojo.User">
       SELECT
@@ -163,5 +170,74 @@
        from mmall_user user
       WHERE user.username=#{username}
       and password=#{password}
+  </select>
+  <select id="getQuestion" parameterType="com.imall.pojo.User"
+          resultType="java.lang.String">
+    SELECT user.question
+      from mmall_user user
+    where user.username=#{username}
+  </select>
+  <select id="getAnswer" parameterType="com.imall.pojo.User" resultType="int">
+    SELECT count(1)
+    from mmall_user user
+    WHERE
+    user.username=#{username}
+    and
+    user.question=#{question}
+    and user.answer=#{answer}
+  </select>
+  
+  <update id="modifyPassword" parameterType="com.imall.pojo.User">
+    UPDATE mmall_user
+    <set>
+      <if test="password!=null">
+        password =#{password}
+      </if>
+    </set>
+    where username=#{username}
+  </update>
+
+    <select id="checkPassword" parameterType="map" resultType="int">
+        SELECT count(1)
+        from mmall_user
+        WHERE
+        id=#{userId}
+        and password=#{password}
+    </select>
+  <select id="selectByKeySelective" parameterType="com.imall.pojo.User" resultType="com.imall.pojo.User">
+    SELECT 
+    <include refid="User_Info_List"/>
+    from mmall_user
+    WHERE
+    <if test="id != null">
+        id=#{id}
+      </if>
+      <if test="username != null">
+       and  username= #{username}
+      </if>
+
+      <if test="email != null">
+        and email=#{email}
+      </if>
+      <if test="phone != null">
+        and phone=#{phone}
+      </if>
+      <if test="question != null">
+        and question=#{question}
+      </if>
+      <if test="answer != null">
+        and answer=#{answer}
+      </if>
+      <if test="role != null">
+        and role=#{role}
+      </if>
+      <if test="createTime != null">
+        and createTime=#{createTime}
+      </if>
+      <if test="updateTime != null">
+        and updateTime=#{updateTime}
+      </if>
+
+
   </select>
 </mapper>
