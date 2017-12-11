@@ -12,7 +12,7 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/user/")
-@SessionAttributes("currentUser")
+@SessionAttributes(value = "currentUser")
 public class UserController {
 
     @Autowired
@@ -21,10 +21,11 @@ public class UserController {
 
     @RequestMapping(value = "login",method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse login(User user, Model model){
+    public ServerResponse login(User user, Model model,HttpSession session){
         ServerResponse<User> response=iUserService.login(user);
         if(response.isSuccess()){
             model.addAttribute("currentUser",response.getData());
+
         }
         return response;
     }
@@ -91,5 +92,6 @@ public class UserController {
         return ServerResponse.createByErrorMessage("登录失效或者没有登录！");
 
     }
+
 
 }

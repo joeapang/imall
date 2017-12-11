@@ -12,8 +12,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.PasswordAuthentication;
-import java.security.Key;
 import java.util.UUID;
 
 
@@ -138,7 +136,7 @@ public class UserServiceImpl implements IUserService {
             String md5Password = MD5Util.MD5Encode(password);
             int rowCount = userMapper.modifyPassword(username, md5Password);
             if (rowCount>0){
-                TokenCatch.removeKey(Const.TOKEN_PREFIX);
+                TokenCatch.removeKey(Const.TOKEN_PREFIX+username);
                 return ServerResponse.createBySuccessMessage("修改成功！");
             }
         }else{
@@ -170,6 +168,19 @@ public class UserServiceImpl implements IUserService {
         }
 
         return ServerResponse.createBySuccess(user);
+    }
+
+    /**
+     * 校验是否是管理员
+     * @param user
+     * @return
+     */
+    @Override
+    public ServerResponse checkAdminRole(User user) {
+        if(user!=null&& user.getRole().intValue()==Const.Role.ROLE_ADMIN){
+            return ServerResponse.createBySuccess();
+        }
+        return ServerResponse.createByError();
     }
 
 

@@ -1,5 +1,7 @@
 package com.imall.common;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import java.io.Serializable;
@@ -39,7 +41,7 @@ public class ServerResponse<T> implements Serializable {
         this.data = data;
     }
 
-    //@JsonIgnore
+    @JsonIgnore
     public boolean isSuccess() {
         return this.status == ResponseCode.SUCCESS.getCode();
     }
