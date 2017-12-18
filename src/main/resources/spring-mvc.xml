@@ -10,7 +10,8 @@
 >
     <context:component-scan base-package="com.imall" use-default-filters="false">
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
-        <context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+        <context:include-filter type="annotation"
+                                expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
     </context:component-scan>
 
     <mvc:annotation-driven>
@@ -33,5 +34,29 @@
         </mvc:message-converters>
     </mvc:annotation-driven>
     <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver"
-    p:prefix="/pages/" p:suffix="*.jsp"></bean>
+          p:prefix="/pages/" p:suffix="*.jsp"></bean>
+
+    <!-- SpringMVC上传文件时，需要配置MultipartResolver处理器
+        maxUploadSize上传的最大限制为10M
+        maxInMemorySize 读取文件到内存中最大的字节数,默认是1024 此处为4M
+    -->
+
+    <bean id="multipartFileResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+          p:defaultEncoding="UTF-8" p:maxUploadSize="1048576" p:maxInMemorySize="4069">
+
+    </bean>
+
+    <!-- SpringMVC在超出上传文件限制时，会抛出org.springframework.web.multipart.MaxUploadSizeExceededException -->
+    <!-- 该异常是SpringMVC在检查上传的文件信息时抛出来的，而且此时还没有进入到Controller方法中 -->
+    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <!-- 遇到MaxUploadSizeExceededException异常时，自动跳转到XXX页面 -->
+                <prop
+                        key="org.springframework.web.multipart.MaxUploadSizeExceededException">
+                </prop>
+            </props>
+        </property>
+
+    </bean>
 </beans>

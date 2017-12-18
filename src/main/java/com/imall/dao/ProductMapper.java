@@ -1,7 +1,9 @@
 package com.imall.dao;
 
 import com.imall.pojo.Product;
+import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ProductMapper {
@@ -17,5 +19,5 @@ public interface ProductMapper {
 
     int updateByPrimaryKey(Product record);
 
-    List<Product> getList(Product product);
+    List<Product> getList(@Param("product") Product product, @Param("fromPrice") BigDecimal fromPrice, @Param("toPrice") BigDecimal toPrice);
 }

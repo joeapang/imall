@@ -166,19 +166,26 @@
       update_time =now()
     where id = #{id,jdbcType=INTEGER}
   </update>
-    <select id="getList" parameterType="com.imall.pojo.Product" resultMap="ProductResultMap">
+    <select id="getList"  resultMap="ProductResultMap">
       SELECT
       <include refid="Product_Column_List"/>
         FROM mmall_product product
         <trim prefix="where" prefixOverrides="and|or">
-            <if test="id!=null and id!='' ">
-                and product.id like CONCAT(CONCAT('%', #{id}), '%')
+            1=1
+            <if test="product.id!=null and product.id!='' ">
+                and product.id like CONCAT(CONCAT('%', #{product.id}), '%')
             </if>
-            <if test="name!=null and name!=''">
-                and Upper(product.name) like UPPER(CONCAT(CONCAT('%', #{name}), '%'))
+            <if test="product.name!=null and product.name!=''">
+                and Upper(product.name) like UPPER(CONCAT(CONCAT('%', #{product.name}), '%'))
             </if>
-            <if test="subtitle!=null and subtitle!='' ">
-                and product.subtitle like '%${subtitle}%'
+            <if test="product.subtitle!=null and product.subtitle!='' ">
+                and product.subtitle like '%${product.subtitle}%'
+            </if>
+            <if test="fromPrice!=null and toPrice!=null">
+                and price between #{fromPrice} and #{toPrice}
+            </if>
+            <if test="product.categoryId!=null and product.category!='' ">
+                and product.categoryId like CONCAT(CONCAT('%', #{product.categoryId}), '%')
             </if>
         ORDER BY id ASC
         </trim>

@@ -2,22 +2,28 @@ package com.imall.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
+import com.imall.common.Const;
 import com.imall.common.ResponseCode;
 import com.imall.common.ServerResponse;
 import com.imall.dao.CategoryMapper;
 import com.imall.dao.ProductMapper;
 import com.imall.pojo.Category;
 import com.imall.pojo.Product;
+import com.imall.service.ICateGoryService;
 import com.imall.service.IProductService;
 import com.imall.utils.DateUtil;
 import com.imall.utils.PropertiesUtils;
 import com.imall.vo.ProductDetail;
+import net.sf.jsqlparser.schema.Server;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service("iProductService")
 public class IProductServiceImpl implements IProductService {
@@ -26,6 +32,8 @@ public class IProductServiceImpl implements IProductService {
     CategoryMapper categoryMapper;
     @Autowired
     ProductMapper productMapper;
+    @Autowired
+    ICateGoryService cateGoryService;
 
     @Override
     public ServerResponse<String> saveOrUpdateProduct(Product product) {
@@ -55,7 +63,7 @@ public class IProductServiceImpl implements IProductService {
     }
 
     @Override
-    public ServerResponse<ProductDetail> getProductDetails(Integer productId) {
+    public ServerResponse<ProductDetail> managerProductDetails(Integer productId) {
 
         if (StringUtils.isBlank(productId.toString())) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(), ResponseCode.ILLEGAL_ARGUMENT.getDes());
@@ -70,12 +78,15 @@ public class IProductServiceImpl implements IProductService {
     }
 
     @Override
-    public ServerResponse<PageInfo<ProductDetail>> getList(Product product, Integer pageNum, Integer pageSize) {
+    public ServerResponse<PageInfo<ProductDetail>> managerList(Product product, BigDecimal fromPrice, BigDecimal toPrice, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum,pageSize,false);
-        List<Product> products=productMapper.getList(product);
+        List<Product> products=productMapper.getList(product,fromPrice,toPrice);
+        if(products.isEmpty()){
+            return ServerResponse.createByErrorMessage("产品不存在！");
+        }
         List<ProductDetail> resultList=new ArrayList<>();
         for(Product item:products){
-            resultList.add(assembleProductDetail(item));
+                resultList.add(assembleProductDetail(item));
         }
 
         PageInfo<ProductDetail> pageResult=new PageInfo<>(resultList);
@@ -105,5 +116,40 @@ public class IProductServiceImpl implements IProductService {
         }
         productDetail.setImageHost(PropertiesUtils.getProperties("ftp.server.http.prefix", ""));
         return productDetail;
+    }
+
+    @Override
+    public ServerResponse<PageInfo<ProductDetail>> getList(Product product, String categoryName,BigDecimal fromPrice, BigDecimal toPrice, Integer pageNum, Integer pageSize) {
+
+
+        PageHelper.startPage(pageNum,pageSize,true);
+        List<Product> products=productMapper.getList(product,fromPrice,toPrice);
+        List<Category> categoryList=Lists.newArrayList();
+        Category category=new Category();
+        category.setName(categoryName);
+        if(StringUtils.isNotEmpty(categoryName)){
+            List<Category> categoryResult=categoryMapper.selectByKeySelective(category);
+            if(categoryResult==null){
+                return ServerResponse.createByErrorMessage("没有该分类！");
+            }
+
+            //categoryList=cateGoryService.getDeepSubCategory(categoryResult).getData();
+        }
+
+
+        if(products.isEmpty()){
+            return ServerResponse.createByErrorMessage("产品不存在！");
+        }
+        List<ProductDetail> resultList=new ArrayList<>();
+        for(Product item:products){
+            if(Objects.equals(item.getStatus(),Const.ProductStatusEnum.ON_SALE.getCode()))
+                resultList.add(assembleProductDetail(item));
+        }
+        if(resultList.isEmpty()){
+            return ServerResponse.createByErrorMessage("产品已经售罄或者已经下架！");
+        }
+        PageInfo<ProductDetail> pageResult=new PageInfo<>(resultList);
+        return ServerResponse.createBySuccess(pageResult);
+
     }
 }
